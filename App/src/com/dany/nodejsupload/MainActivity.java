@@ -1,8 +1,12 @@
 package com.dany.nodejsupload;
 
+
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -20,7 +24,8 @@ public class MainActivity extends Activity {
     @Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if(requestCode == GET_PIC_CODE && resultCode == Activity.RESULT_OK){
-			String imgPath =  data.getData().getEncodedPath();
+			Uri imgUri =  data.getData();
+			String imgPath = getPath(imgUri);
 			Log.d("DEBUG", "Choose: " + imgPath);
 			new HttpUpload(this, imgPath).execute();
 		}
@@ -37,5 +42,16 @@ public class MainActivity extends Activity {
     	intent.setType("image/*");
     	startActivityForResult(intent, GET_PIC_CODE);
     }
+    
+    //Get the path from Uri
+	public String getPath(Uri uri) {
+		String[] projection = { MediaStore.Images.Media.DATA };
+		Cursor cursor = managedQuery(uri, projection, null, null, null);
+		startManagingCursor(cursor);
+		int column_index = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
+		cursor.moveToFirst();
+		return cursor.getString(column_index);
+	}
+
     
 }
